@@ -217,6 +217,16 @@ type Options struct {
 	BaseURL      string
 	TextModelID  string
 	ImageModelID string
+
+	// Gemini/Imagen native API options. Empty values are derived from Size and
+	// output format; callers only need to set these when overriding provider
+	// defaults explicitly.
+	GeminiAspectRatio string
+	GeminiImageSize   string
+	ImagenAspectRatio string
+	ImagenImageSize   string
+	ImagenSampleCount int
+
 	// ReasoningEffort controls Responses API reasoning.effort.
 	ReasoningEffort string
 
