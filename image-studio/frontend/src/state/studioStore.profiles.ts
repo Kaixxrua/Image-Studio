@@ -8,8 +8,10 @@ import type { StudioState } from "./studioStore.types";
 import {
   duplicateProfile as cloneProfile,
   genProfileId,
+  defaultImageModelForAPIMode,
   keyringUserFor,
   nextDefaultProfileName,
+  normalizeProfileAPIMode,
   normalizeResponsesTransport,
   pickActiveProfile,
 } from "../lib/profiles";
@@ -40,16 +42,17 @@ export function createProfileActions(store: StateAdapter) {
     }) {
       const list = store.getState().profiles;
       const id = genProfileId();
+      const apiMode = normalizeProfileAPIMode(input.apiMode);
       const profile: UpstreamProfile = {
         id,
         name: input.name?.trim() || nextDefaultProfileName(list),
-        apiMode: input.apiMode,
-        responsesTransport: normalizeResponsesTransport(input.apiMode === "responses" ? input.responsesTransport : "sse"),
+        apiMode,
+        responsesTransport: normalizeResponsesTransport(apiMode === "responses" ? input.responsesTransport : "sse"),
         requestPolicy: input.requestPolicy ?? "openai",
         imagesNewAPICompat: input.imagesNewAPICompat === true,
         baseURL: cleanBaseURL(input.baseURL ?? ""),
         textModelID: (input.textModelID ?? "").trim(),
-        imageModelID: (input.imageModelID ?? "").trim(),
+        imageModelID: (input.imageModelID ?? "").trim() || defaultImageModelForAPIMode(apiMode),
         reasoningEffort: input.reasoningEffort ?? "xhigh",
         concurrencyLimit: normalizeConcurrencyLimit(input.concurrencyLimit ?? 0),
         fallbackProfileId: undefined,
@@ -75,18 +78,22 @@ export function createProfileActions(store: StateAdapter) {
       const index = list.findIndex((profile) => profile.id === id);
       if (index < 0) return false;
       const current = list[index];
+      const apiMode = normalizeProfileAPIMode(patch.apiMode ?? current.apiMode);
+      const nextImageModelID = patch.imageModelID !== undefined
+        ? patch.imageModelID.trim() || defaultImageModelForAPIMode(apiMode)
+        : current.imageModelID.trim() || defaultImageModelForAPIMode(apiMode);
       const next: UpstreamProfile = {
         ...current,
         name: patch.name !== undefined ? patch.name.trim() : current.name,
-        apiMode: patch.apiMode ?? current.apiMode,
-        responsesTransport: patch.responsesTransport !== undefined
-          ? normalizeResponsesTransport(patch.responsesTransport)
-          : normalizeResponsesTransport(current.responsesTransport),
+        apiMode,
+        responsesTransport: apiMode === "responses"
+          ? normalizeResponsesTransport(patch.responsesTransport ?? current.responsesTransport)
+          : "sse",
         requestPolicy: patch.requestPolicy ?? current.requestPolicy,
         imagesNewAPICompat: patch.imagesNewAPICompat ?? current.imagesNewAPICompat ?? false,
         baseURL: patch.baseURL !== undefined ? cleanBaseURL(patch.baseURL) : current.baseURL,
         textModelID: patch.textModelID !== undefined ? patch.textModelID.trim() : current.textModelID,
-        imageModelID: patch.imageModelID !== undefined ? patch.imageModelID.trim() : current.imageModelID,
+        imageModelID: nextImageModelID,
         reasoningEffort: patch.reasoningEffort ?? current.reasoningEffort ?? "xhigh",
         concurrencyLimit: patch.concurrencyLimit !== undefined
           ? normalizeConcurrencyLimit(patch.concurrencyLimit) : current.concurrencyLimit,

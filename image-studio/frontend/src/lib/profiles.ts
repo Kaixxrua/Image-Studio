@@ -1,3 +1,7 @@
+import {
+  DEFAULT_GEMINI_IMAGE_MODEL,
+  DEFAULT_IMAGEN_MODEL,
+} from "../../../../shared/kernel/requestModel.js";
 import type { APIMode, ReasoningEffortValue, RequestPolicy, ResponsesTransport, UpstreamProfile } from "../types/domain";
 
 function normalizeReasoningEffort(value: unknown): ReasoningEffortValue {
@@ -8,6 +12,10 @@ function normalizeReasoningEffort(value: unknown): ReasoningEffortValue {
 
 export function normalizeResponsesTransport(value: unknown): ResponsesTransport {
   return value === "websocket" ? "websocket" : "sse";
+}
+
+export function normalizeProfileAPIMode(value: unknown): APIMode {
+  return value === "images" || value === "gemini" || value === "imagen" ? value : "responses";
 }
 
 // localStorage 键名规范:
@@ -41,11 +49,44 @@ export function keyringUserFor(profileId: string): string {
 }
 
 export function apiModeLabel(mode: APIMode): string {
-  return mode === "images" ? "Images API" : "Responses API";
+  switch (normalizeProfileAPIMode(mode)) {
+    case "images":
+      return "Images API";
+    case "gemini":
+      return "Gemini API";
+    case "imagen":
+      return "Imagen API";
+    default:
+      return "Responses API";
+  }
+}
+
+export function apiModeShortLabel(mode: APIMode): string {
+  switch (normalizeProfileAPIMode(mode)) {
+    case "images":
+      return "Images";
+    case "gemini":
+      return "Gemini";
+    case "imagen":
+      return "Imagen";
+    default:
+      return "Responses";
+  }
 }
 
 export function requestPolicyLabel(mode: RequestPolicy): string {
   return mode === "compat" ? "兼容中转扩展" : "OpenAI 标准";
+}
+
+export function defaultImageModelForAPIMode(apiMode: APIMode): string {
+  switch (normalizeProfileAPIMode(apiMode)) {
+    case "gemini":
+      return DEFAULT_GEMINI_IMAGE_MODEL;
+    case "imagen":
+      return DEFAULT_IMAGEN_MODEL;
+    default:
+      return "";
+  }
 }
 
 // 从可信任的 JSON 反序列化一个 profile。字段缺失 / 类型不对回 null,bootstrap
@@ -55,13 +96,15 @@ export function tryParseProfile(raw: unknown): UpstreamProfile | null {
   const o = raw as Record<string, unknown>;
   const id = typeof o.id === "string" ? o.id : "";
   const name = typeof o.name === "string" ? o.name : "";
-  const apiMode = o.apiMode === "images" ? "images" : "responses";
+  const apiMode = normalizeProfileAPIMode(o.apiMode);
   const responsesTransport = normalizeResponsesTransport(o.responsesTransport);
   const requestPolicy = o.requestPolicy === "compat" ? "compat" : "openai";
   const imagesNewAPICompat = o.imagesNewAPICompat === true;
   const baseURL = typeof o.baseURL === "string" ? o.baseURL : "";
   const textModelID = typeof o.textModelID === "string" ? o.textModelID : "";
-  const imageModelID = typeof o.imageModelID === "string" ? o.imageModelID : "";
+  const imageModelID = typeof o.imageModelID === "string" && o.imageModelID.trim()
+    ? o.imageModelID
+    : defaultImageModelForAPIMode(apiMode);
   const reasoningEffort = normalizeReasoningEffort(o.reasoningEffort);
   const concurrencyLimit = typeof o.concurrencyLimit === "number" && o.concurrencyLimit >= 0
     ? Math.floor(o.concurrencyLimit) : 0;
@@ -124,7 +167,7 @@ export function makeBlankProfile(apiMode: APIMode = "responses", profiles: Upstr
     imagesNewAPICompat: false,
     baseURL: "",
     textModelID: "",
-    imageModelID: "",
+    imageModelID: defaultImageModelForAPIMode(apiMode),
     reasoningEffort: "xhigh",
     concurrencyLimit: 0,
     fallbackProfileId: undefined,

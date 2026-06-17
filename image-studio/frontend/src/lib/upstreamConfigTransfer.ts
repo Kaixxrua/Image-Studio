@@ -1,5 +1,6 @@
 import type { APIMode, RequestPolicy, ReasoningEffortValue, ResponsesTransport, UpstreamProfile } from "../types/domain";
 import { buildUpstreamModelCatalog } from "./upstreamModels.ts";
+import { defaultImageModelForAPIMode } from "./profiles.ts";
 import { cleanBaseURL } from "./security.ts";
 
 export type UpstreamConfigExportProfile = {
@@ -81,7 +82,7 @@ function toProfileSnapshot(input: UpstreamConfigExportProfile, actualId: string)
 }
 
 function normalizeAPIMode(value: unknown): APIMode {
-  return value === "images" ? "images" : "responses";
+  return value === "images" || value === "gemini" || value === "imagen" ? value : "responses";
 }
 
 function normalizeRequestPolicy(value: unknown): RequestPolicy {
@@ -145,16 +146,19 @@ function parseExportProfile(raw: unknown): UpstreamConfigExportProfile | null {
   const id = typeof source.id === "string" ? source.id.trim() : "";
   const name = typeof source.name === "string" ? source.name.trim() : "";
   if (!id || !name) return null;
+  const apiMode = normalizeAPIMode(source.apiMode);
   return {
     id,
     name,
-    apiMode: normalizeAPIMode(source.apiMode),
+    apiMode,
     responsesTransport: normalizeResponsesTransport(source.responsesTransport),
     requestPolicy: normalizeRequestPolicy(source.requestPolicy),
     imagesNewAPICompat: source.imagesNewAPICompat === true,
     baseURL: normalizeImportedBaseURL(source.baseURL),
     textModelID: typeof source.textModelID === "string" ? source.textModelID.trim() : "",
-    imageModelID: typeof source.imageModelID === "string" ? source.imageModelID.trim() : "",
+    imageModelID: typeof source.imageModelID === "string" && source.imageModelID.trim()
+      ? source.imageModelID.trim()
+      : defaultImageModelForAPIMode(apiMode),
     reasoningEffort: normalizeReasoningEffort(source.reasoningEffort),
     concurrencyLimit: normalizeConcurrencyLimit(source.concurrencyLimit),
     fallbackProfileId: typeof source.fallbackProfileId === "string" ? source.fallbackProfileId.trim() || undefined : undefined,
@@ -319,7 +323,7 @@ function buildProfilePatch(
     imagesNewAPICompat: incoming.imagesNewAPICompat,
     baseURL: incoming.baseURL,
     textModelID: incoming.textModelID,
-    imageModelID: incoming.imageModelID,
+    imageModelID: incoming.imageModelID || defaultImageModelForAPIMode(incoming.apiMode),
     reasoningEffort: incoming.reasoningEffort,
     concurrencyLimit: incoming.concurrencyLimit,
     lastUsedAt: incoming.lastUsedAt,
@@ -356,7 +360,7 @@ export async function applyParsedUpstreamConfigImport(
       imagesNewAPICompat: incoming.imagesNewAPICompat,
       baseURL: incoming.baseURL,
       textModelID: incoming.textModelID,
-      imageModelID: incoming.imageModelID,
+      imageModelID: incoming.imageModelID || defaultImageModelForAPIMode(incoming.apiMode),
       reasoningEffort: incoming.reasoningEffort,
       concurrencyLimit: incoming.concurrencyLimit,
       apiKey: incoming.apiKey,

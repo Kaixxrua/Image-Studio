@@ -12,6 +12,7 @@ import {
   normalizeImageModel as normalizeSharedImageModel,
   normalizeTextModel as normalizeSharedTextModel,
 } from "../../../../../../shared/kernel/requestModel.js";
+import type { APIMode } from "../../../types/domain";
 import type { KernelImageSource, RemoteGeneratePayload } from "./types.ts";
 
 export function nowSeconds(startedAt: number): number {
@@ -42,7 +43,7 @@ export function normalizeBaseURL(raw: string): string {
   return normalizeSharedBaseURL(raw);
 }
 
-export function normalizeAPIMode(apiMode: string): "responses" | "images" {
+export function normalizeAPIMode(apiMode: string): APIMode {
   return normalizeSharedAPIMode(apiMode);
 }
 

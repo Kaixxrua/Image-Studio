@@ -3,9 +3,9 @@
 
 export type Mode = "generate" | "edit";
 
-// 上游 API 形态 —— Responses (`/v1/responses` + SSE) 或标准 Images API。
+// 上游 API 形态 —— OpenAI Responses / Images,或 Google Gemini / Imagen。
 // 老代码里以前是顶层全局二选一,v0.1.6 起降级成 profile 的字段。
-export type APIMode = "responses" | "images";
+export type APIMode = "responses" | "images" | "gemini" | "imagen";
 export type RequestPolicy = "openai" | "compat";
 export type ReasoningEffortValue = "low" | "medium" | "high" | "xhigh";
 export type ResponsesTransport = "sse" | "websocket";

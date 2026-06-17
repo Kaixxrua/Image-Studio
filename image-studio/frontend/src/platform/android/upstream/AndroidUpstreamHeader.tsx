@@ -1,5 +1,6 @@
 import { CheckCircle2, ClipboardPaste, PlugZap, ShieldCheck } from "lucide-react";
 import type { UpstreamProfile } from "../../../types/domain";
+import { apiModeLabel } from "../../../lib/profiles";
 
 export function AndroidUpstreamHeader({
   activeProfile,
@@ -20,7 +21,7 @@ export function AndroidUpstreamHeader({
         <h2>{activeProfile ? activeProfile.name : "未配置"}</h2>
         <p>
           {activeProfile
-            ? `${activeProfile.apiMode === "responses" ? "Responses API" : "Images API"} · ${activeProfile.baseURL || "未填写地址"}`
+            ? `${apiModeLabel(activeProfile.apiMode)} · ${activeProfile.baseURL || "未填写地址"}`
             : "先添加一个可用配置。"}
         </p>
       </div>

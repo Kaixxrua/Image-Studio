@@ -1,4 +1,5 @@
 import type { Dispatch, SetStateAction } from "react";
+import type { APIMode } from "../../../types/domain";
 import {
   type AspectPreset,
   type AspectPresetOption,
@@ -49,7 +50,7 @@ export function AndroidPhoneParameterSection({
   allowCustomAspectRatios: boolean;
   allowPreciseSizeControl: boolean;
   availableResolutions: ResolutionPreset[];
-  apiMode: "responses" | "images";
+  apiMode: APIMode;
   batchCount: number;
   handleAspectSelect: (aspect: AspectPreset) => void;
   handleResolutionSelect: (resolution: ResolutionPreset) => void;

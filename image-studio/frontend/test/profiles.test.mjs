@@ -38,6 +38,18 @@ test("blank profiles use sequential default names", () => {
   assert.equal(profiles.makeBlankProfile("images", existing).name, "配置2");
 });
 
+test("blank Gemini and Imagen profiles use provider default image models", () => {
+  assert.equal(profiles.makeBlankProfile("gemini").imageModelID, "gemini-3.1-flash-image");
+  assert.equal(profiles.makeBlankProfile("imagen").imageModelID, "imagen-4.0-generate-001");
+});
+
+test("api mode labels cover Gemini and Imagen", () => {
+  assert.equal(profiles.apiModeLabel("gemini"), "Gemini API");
+  assert.equal(profiles.apiModeLabel("imagen"), "Imagen API");
+  assert.equal(profiles.apiModeShortLabel("gemini"), "Gemini");
+  assert.equal(profiles.apiModeShortLabel("imagen"), "Imagen");
+});
+
 test("blank responses profile defaults reasoning effort to xhigh", () => {
   assert.equal(profiles.makeBlankProfile("responses").reasoningEffort, "xhigh");
 });

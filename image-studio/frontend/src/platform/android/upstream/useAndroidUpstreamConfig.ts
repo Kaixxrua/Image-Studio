@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { GetStoredAPIKey, probeCurrentUpstream } from "../../runtime/host";
-import { keyringUserFor } from "../../../lib/profiles";
+import { defaultImageModelForAPIMode, keyringUserFor } from "../../../lib/profiles";
 import { useStudioStore } from "../../../state/studioStore";
 import type { APIMode, ReasoningEffortValue, RequestPolicy, UpstreamProfile } from "../../../types/domain";
 import { buildUpstreamModelCatalog, type UpstreamModelCatalog } from "../../../lib/upstreamModels";
@@ -16,6 +16,8 @@ export const ANDROID_API_MODE_OPTIONS: Array<{
 }> = [
   { id: "responses", title: "Responses", meta: "SSE 长任务" },
   { id: "images", title: "Images", meta: "标准图像接口" },
+  { id: "gemini", title: "Gemini", meta: "generateContent" },
+  { id: "imagen", title: "Imagen", meta: "predict 生图" },
 ];
 
 export const ANDROID_REQUEST_POLICY_OPTIONS: Array<{
@@ -122,7 +124,19 @@ export function useAndroidUpstreamConfig(open: boolean) {
     && !saving;
 
   function patchDraft(patch: Partial<UpstreamProfile>) {
-    setDraft((current) => (current ? { ...current, ...patch } : current));
+    setDraft((current) => {
+      if (!current) return current;
+      if (patch.apiMode === undefined) return { ...current, ...patch };
+      const currentDefaultModel = defaultImageModelForAPIMode(current.apiMode);
+      const nextDefaultModel = defaultImageModelForAPIMode(patch.apiMode);
+      const resetCrossProviderModel = currentDefaultModel !== nextDefaultModel;
+      return {
+        ...current,
+        ...patch,
+        responsesTransport: patch.apiMode === "responses" ? current.responsesTransport : "sse",
+        imageModelID: resetCrossProviderModel ? nextDefaultModel : current.imageModelID.trim() || nextDefaultModel,
+      };
+    });
   }
 
   async function handleNew(apiMode: APIMode = "responses") {

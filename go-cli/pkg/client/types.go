@@ -6,6 +6,8 @@ const (
 	BaseURL                  = "" // 不再内置默认上游;调用方必须显式提供 Options.BaseURL
 	TextModel                = "gpt-5.5"
 	ImageModel               = "gpt-image-2"
+	DefaultGeminiImageModel  = "gemini-3.1-flash-image"
+	DefaultImagenModel       = "imagen-4.0-generate-001"
 	DefaultSize              = "1024x1024"
 	DefaultQuality           = "auto"
 	OutputFormat             = "png"
@@ -114,6 +116,8 @@ type APIMode string
 const (
 	APIModeResponses APIMode = "responses"
 	APIModeImages    APIMode = "images"
+	APIModeGemini    APIMode = "gemini"
+	APIModeImagen    APIMode = "imagen"
 )
 
 type ResponsesTransport string

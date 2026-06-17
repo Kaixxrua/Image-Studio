@@ -1,5 +1,6 @@
 import { ClipboardPaste, Copy, Download, Plus, RefreshCw, Trash2, Upload } from "lucide-react";
 import type { UpstreamProfile } from "../../types/domain";
+import { apiModeShortLabel } from "../../lib/profiles";
 import { usePlatform } from "../../platform/context";
 
 export function UpstreamProfileList({
@@ -66,7 +67,7 @@ export function UpstreamProfileList({
                   />
                   <span className="min-w-0 flex-1 truncate break-words text-[13px] font-medium [overflow-wrap:anywhere]">{p.name}</span>
                   <span className="shrink-0 text-[9px] uppercase tracking-wider opacity-70">
-                    {p.apiMode === "responses" ? "R" : "I"}
+                    {apiModeShortLabel(p.apiMode)}
                   </span>
                 </button>
               );

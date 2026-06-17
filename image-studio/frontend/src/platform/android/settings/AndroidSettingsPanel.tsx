@@ -23,7 +23,8 @@ import {
   Trash2,
   Upload,
 } from "lucide-react";
-import type { CompletionSoundConfig, KernelRuntimeMode, ProxyMode, ThemeMode, UpstreamProfile } from "../../../types/domain";
+import type { APIMode, CompletionSoundConfig, KernelRuntimeMode, ProxyMode, ThemeMode, UpstreamProfile } from "../../../types/domain";
+import { apiModeLabel, apiModeShortLabel } from "../../../lib/profiles";
 import { androidSaveHint } from "../bridge";
 
 export type AndroidSettingsSurface = "phone" | "pad";
@@ -31,7 +32,7 @@ export type AndroidSettingsSurface = "phone" | "pad";
 export type AndroidSettingsPanelProps = {
   activeProfile: UpstreamProfile | undefined;
   activeProfileId: string;
-  apiMode: "responses" | "images";
+  apiMode: APIMode;
   clearAPIKey: () => void;
   clearHistory: () => void;
   completionSound: CompletionSoundConfig;
@@ -149,7 +150,7 @@ export function AndroidSettingsPanel({
   theme,
   upstreamReady,
 }: AndroidSettingsPanelProps) {
-  const upstreamModeLabel = apiMode === "responses" ? "Responses API" : "Images API";
+  const upstreamModeLabel = apiModeLabel(apiMode);
   const historyCountLabel = `${historyCount} 条`;
   const currentSummary = [
     upstreamReady ? "上游已配置" : "上游未配置",
@@ -207,7 +208,7 @@ export function AndroidSettingsPanel({
           >
             {profiles.map((profile) => (
               <option key={profile.id} value={profile.id}>
-                {profile.name} · {profile.apiMode === "responses" ? "Responses" : "Images"}
+                {profile.name} · {apiModeShortLabel(profile.apiMode)}
               </option>
             ))}
           </select>

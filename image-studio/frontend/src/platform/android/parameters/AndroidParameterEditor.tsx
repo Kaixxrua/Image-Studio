@@ -1,4 +1,4 @@
-import type { QualityValue } from "../../../types/domain";
+import type { APIMode, QualityValue } from "../../../types/domain";
 import { availableQualityOptions } from "../../../components/panel/panelOptions";
 import {
   RESOLUTION_PRESETS,
@@ -54,7 +54,7 @@ export function AndroidParameterEditor({
   allowCustomAspectRatios: boolean;
   allowPreciseSizeControl: boolean;
   availableResolutions: ResolutionPreset[];
-  apiMode: "responses" | "images";
+  apiMode: APIMode;
   batchCount: number;
   handleAspectSelect: (aspect: AspectPreset) => void;
   handleResolutionSelect: (resolution: ResolutionPreset) => void;

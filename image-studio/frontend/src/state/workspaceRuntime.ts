@@ -1,4 +1,5 @@
 import type {
+  APIMode,
   BatchProcessAutoAspectResolution,
   BatchProcessSourceImage,
   BatchProcessConfig,
@@ -10,7 +11,7 @@ import type {
 } from "../types/domain";
 import type { GenerateOptionsLike } from "../platform/runtime/hostTypes";
 
-export type APIModeValue = "responses" | "images";
+export type APIModeValue = APIMode;
 
 export interface RunningJobMeta {
   workspaceId: string;
@@ -54,11 +55,23 @@ export interface WorkspaceRuntimeMirror {
 }
 
 export function normalizeAPIMode(mode: string): APIModeValue {
-  return String(mode).trim() === "images" ? "images" : "responses";
+  const normalized = String(mode).trim();
+  return normalized === "images" || normalized === "gemini" || normalized === "imagen"
+    ? normalized
+    : "responses";
 }
 
 export function apiModeLabel(mode: string): string {
-  return normalizeAPIMode(mode) === "images" ? "Images API" : "Responses API";
+  switch (normalizeAPIMode(mode)) {
+    case "images":
+      return "Images API";
+    case "gemini":
+      return "Gemini API";
+    case "imagen":
+      return "Imagen API";
+    default:
+      return "Responses API";
+  }
 }
 
 export function normalizeConcurrencyLimit(value: unknown): number {

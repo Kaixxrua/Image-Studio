@@ -1,5 +1,6 @@
 import { ImagePlus, Trash2, X } from "lucide-react";
 import type {
+  APIMode,
   Mode,
   QualityValue,
   RequestPolicy,
@@ -61,7 +62,7 @@ export function DesktopComposeSections({
   exactSizeLabel?: string | null;
   allowCustomAspectRatios: boolean;
   allowPreciseSizeControl: boolean;
-  apiMode: "responses" | "images";
+  apiMode: APIMode;
   batchCount: number;
   batchProcess: BatchProcessConfig;
   chooseBatchInputDir: () => void;

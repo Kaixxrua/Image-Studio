@@ -1185,7 +1185,7 @@ export const useStudioStore = create<StudioState>((set, get) => ({
       const available = concurrencyLimit - activeCount;
       const requiredConcurrency = requestedConcurrency;
       if (available < requiredConcurrency) {
-        const apiLabel = s.apiMode === "responses" ? "Responses API" : "Images API";
+        const apiLabel = apiModeLabel(s.apiMode);
         set({
           errorMessage: batchProcessEnabled
             ? `${apiLabel} 并发限制 ${concurrencyLimit},当前还可提交 ${Math.max(0, available)} 个,批处理并发需要 ${requiredConcurrency} 个。`

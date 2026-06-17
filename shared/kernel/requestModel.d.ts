@@ -1,5 +1,7 @@
 export const DEFAULT_TEXT_MODEL: string;
 export const DEFAULT_IMAGE_MODEL: string;
+export const DEFAULT_GEMINI_IMAGE_MODEL: string;
+export const DEFAULT_IMAGEN_MODEL: string;
 export const DEFAULT_SIZE: string;
 export const DEFAULT_QUALITY: string;
 export const DEFAULT_OUTPUT_FORMAT: string;
@@ -50,7 +52,8 @@ export type SharedImageRequestPayload = {
 };
 
 export function normalizeBaseURL(raw: string): string;
-export function normalizeAPIMode(apiMode: string): "responses" | "images";
+export type APIMode = "responses" | "images" | "gemini" | "imagen";
+export function normalizeAPIMode(apiMode: string): APIMode;
 export function normalizeRequestPolicy(requestPolicy: string): RequestPolicy;
 export function normalizeTextModel(modelID: string): string;
 export function normalizeImageModel(modelID: string): string;

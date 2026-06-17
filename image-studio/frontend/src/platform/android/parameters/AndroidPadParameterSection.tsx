@@ -1,4 +1,5 @@
 import { useState } from "react";
+import type { APIMode } from "../../../types/domain";
 import { Settings } from "lucide-react";
 import {
   type AspectPreset,
@@ -51,7 +52,7 @@ export function AndroidPadParameterSection({
   allowCustomAspectRatios: boolean;
   allowPreciseSizeControl: boolean;
   availableResolutions: ResolutionPreset[];
-  apiMode: "responses" | "images";
+  apiMode: APIMode;
   batchCount: number;
   handleAspectSelect: (aspect: AspectPreset) => void;
   handleResolutionSelect: (resolution: ResolutionPreset) => void;

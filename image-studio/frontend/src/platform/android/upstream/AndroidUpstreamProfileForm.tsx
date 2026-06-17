@@ -1,5 +1,6 @@
 import { Check, Eye, EyeOff, Minus, Plug, Plus, RefreshCw, Save } from "lucide-react";
 import type { ReactNode } from "react";
+import { defaultImageModelForAPIMode } from "../../../lib/profiles";
 import type { UpstreamProfile } from "../../../types/domain";
 import {
   ANDROID_API_MODE_OPTIONS,
@@ -59,6 +60,10 @@ export function AndroidUpstreamProfileForm({
   const isActive = draft.id === activeProfileId;
   const busy = saving || isTestingKey;
   const preferredModels = modelCatalog ? preferredModelsForAPIMode(modelCatalog, draft.apiMode) : null;
+  const imageModelPlaceholder = defaultImageModelForAPIMode(draft.apiMode) || "gpt-image-2";
+  const baseURLHint = draft.apiMode === "gemini" || draft.apiMode === "imagen"
+    ? "Google 官方可填 https://generativelanguage.googleapis.com；自定义 Gemini-compatible endpoint 会接收 API Key、提示词和图片。"
+    : "填写站点根地址，应用会按 API 形态自动拼接 /v1 路径。";
 
   return (
     <section className="android-upstream-form" aria-label="编辑上游配置">
@@ -109,7 +114,7 @@ export function AndroidUpstreamProfileForm({
         </div>
       </AndroidField>
 
-      <AndroidField label="上游 BASE_URL" required hint="填写站点根地址，应用会按 API 形态自动拼接 /v1 路径。">
+      <AndroidField label="上游 BASE_URL" required hint={baseURLHint}>
         <input
           type="text"
           value={draft.baseURL}
@@ -212,7 +217,7 @@ export function AndroidUpstreamProfileForm({
           type="text"
           value={draft.imageModelID}
           onChange={(event) => onPatchDraft({ imageModelID: event.target.value })}
-          placeholder="留空 = 默认 gpt-image-2"
+          placeholder={`留空 = 默认 ${imageModelPlaceholder}`}
           className="focus-ring android-upstream-input font-mono-token"
           spellCheck={false}
         />

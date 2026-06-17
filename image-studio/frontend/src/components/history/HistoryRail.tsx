@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import { useStudioStore } from "../../state/studioStore";
 import type { HistoryItem, Mode } from "../../types/domain";
+import { apiModeLabel, apiModeShortLabel } from "../../lib/profiles";
 import { ContextMenu } from "../common/ContextMenu";
 import { RawResponseModal } from "./RawResponseModal";
 import { usePlatform } from "../../platform/context";
@@ -449,7 +450,7 @@ export function HistoryRail() {
             >
               {profiles.map((profile) => (
                 <option key={profile.id} value={profile.id}>
-                  {profile.name} · {profile.apiMode === "responses" ? "Responses" : "Images"}
+                  {profile.name} · {apiModeShortLabel(profile.apiMode)}
                 </option>
               ))}
               <option value="__manage__">⚙ 管理配置...</option>
@@ -481,7 +482,7 @@ export function HistoryRail() {
         {!isAndroidPhone ? (
           <div className="mt-2 flex items-center justify-between gap-2">
             <p className="min-w-0 text-[11px] leading-relaxed text-zinc-500 dark:text-zinc-300">
-              {apiMode === "responses" ? "Responses API" : "Images API"}
+              {apiModeLabel(apiMode)}
             </p>
           </div>
         ) : null}

@@ -6,7 +6,7 @@ import {
   type ResponsesTransport,
   type UpstreamProfile,
 } from "../../types/domain";
-import { requestPolicyLabel } from "../../lib/profiles";
+import { apiModeLabel, apiModeShortLabel, defaultImageModelForAPIMode, requestPolicyLabel } from "../../lib/profiles";
 import { usePlatform } from "../../platform/context";
 import {
   formatUpstreamModelLabel,
@@ -62,6 +62,8 @@ export function UpstreamProfileEditor({
   const apiModeOptions = [
     { id: "responses" as APIMode, title: "Responses API", sub: "SSE 保活(CF 超时推荐)" },
     { id: "images" as APIMode, title: "Images API", sub: "标准 generations / edits" },
+    { id: "gemini" as APIMode, title: "Gemini API", sub: "Google models/*:generateContent" },
+    { id: "imagen" as APIMode, title: "Imagen API", sub: "Google models/*:predict" },
   ];
   const requestPolicyOptions = [
     { id: "openai" as RequestPolicy, title: requestPolicyLabel("openai"), sub: "默认。只发送 OpenAI 官方公开字段。" },
@@ -71,11 +73,24 @@ export function UpstreamProfileEditor({
     { id: "sse" as ResponsesTransport, title: "HTTP SSE", sub: "默认，兼容性更稳" },
     { id: "websocket" as ResponsesTransport, title: "WebSocket mode", sub: "需要上游支持" },
   ];
-  const selectedAPIMode = apiModeOptions.find((option) => option.id === draft.apiMode) ?? apiModeOptions[0];
+  const selectedAPIMode = apiModeOptions.find((option) => option.id === draft.apiMode);
+  const selectedAPIModeLabel = selectedAPIMode?.title ?? apiModeLabel(draft.apiMode);
   const selectedRequestPolicy = requestPolicyOptions.find((option) => option.id === draft.requestPolicy) ?? requestPolicyOptions[0];
   const selectedReasoningEffort = REASONING_EFFORT_OPTIONS.find((option) => option.value === draft.reasoningEffort) ?? REASONING_EFFORT_OPTIONS[0];
   const preferredModels = modelCatalog ? preferredModelsForAPIMode(modelCatalog, draft.apiMode) : null;
   const fallbackCandidates = profiles.filter((profile) => profile.id !== draft.id && profile.baseURL.trim());
+  const imageModelPlaceholder = defaultImageModelForAPIMode(draft.apiMode) || "gpt-image-2";
+
+  function patchAPIMode(apiMode: APIMode) {
+    const currentDefaultModel = defaultImageModelForAPIMode(draft.apiMode);
+    const nextDefaultModel = defaultImageModelForAPIMode(apiMode);
+    const resetCrossProviderModel = currentDefaultModel !== nextDefaultModel;
+    onPatchDraft({
+      apiMode,
+      responsesTransport: apiMode === "responses" ? draft.responsesTransport : "sse",
+      imageModelID: resetCrossProviderModel ? nextDefaultModel : draft.imageModelID.trim() || nextDefaultModel,
+    });
+  }
 
   return (
     <div className={`upstream-profile-editor flex min-w-0 flex-col ${isAndroidPhone ? "gap-3" : "gap-3.5"}`}>
@@ -103,7 +118,7 @@ export function UpstreamProfileEditor({
         label={(
           <span className="flex items-center justify-between gap-3">
             <span>API 形态</span>
-            <span className="shrink-0 text-[11px] font-medium text-[var(--accent)]">已选 {selectedAPIMode.title}</span>
+            <span className="shrink-0 text-[11px] font-medium text-[var(--accent)]">已选 {selectedAPIModeLabel}</span>
           </span>
         )}
       >
@@ -117,15 +132,13 @@ export function UpstreamProfileEditor({
                 usesFluentUI={usesFluentUI}
                 title={option.title}
                 sub={option.sub}
-                onClick={() => onPatchDraft({ apiMode: option.id })}
+                onClick={() => patchAPIMode(option.id)}
               />
             );
           })}
         </div>
         <Hint>
-          {draft.apiMode === "responses"
-            ? "需要 key 绑定到「拥有 gpt-5.5 模型的分组」。SSE 保活可防 Cloudflare 524。"
-            : "使用标准 Images API,key 用 image-2 / image API 分组,兼容性最广。"}
+          {selectedAPIMode?.sub ?? apiModeLabel(draft.apiMode)}
         </Hint>
       </Field>
 
@@ -168,7 +181,11 @@ export function UpstreamProfileEditor({
         />
         {baseURLError ? <Hint>{baseURLError}</Hint> : null}
         <Hint>
-          只填中转站的站点根地址。应用会按当前 API 形态自动拼接 <code className="font-mono-token">/v1/responses</code>(Responses)或 <code className="font-mono-token">/v1/images/generations</code> / <code className="font-mono-token">/v1/images/edits</code>(Images),<strong>不要</strong>把这些路径手动贴进来。
+          {draft.apiMode === "gemini" || draft.apiMode === "imagen" ? (
+            <>Google 官方可填 <code className="font-mono-token">https://generativelanguage.googleapis.com</code>。应用会自动拼接模型路径；自定义 Gemini-compatible endpoint 会接收你的 API Key、提示词和图片。</>
+          ) : (
+            <>只填中转站的站点根地址。应用会按当前 API 形态自动拼接 <code className="font-mono-token">/v1/responses</code>(Responses)或 <code className="font-mono-token">/v1/images/generations</code> / <code className="font-mono-token">/v1/images/edits</code>(Images),<strong>不要</strong>把这些路径手动贴进来。</>
+          )}
         </Hint>
       </Field>
 
@@ -305,7 +322,7 @@ export function UpstreamProfileEditor({
         <input
           type="text"
           value={draft.imageModelID}
-          placeholder="留空=默认 gpt-image-2"
+          placeholder={`留空=默认 ${imageModelPlaceholder}`}
           onChange={(e) => onPatchDraft({ imageModelID: e.target.value })}
           spellCheck={false}
           className={`focus-ring w-full min-w-0 border border-black/[0.08] bg-[var(--surface)] px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 dark:border-white/[0.08] dark:text-zinc-100 dark:placeholder:text-zinc-500 font-mono-token ${usesFluentUI ? "rounded-[10px]" : "rounded-[14px]"}`}
@@ -343,7 +360,7 @@ export function UpstreamProfileEditor({
           <option value="">不自动切备用上游</option>
           {fallbackCandidates.map((profile) => (
             <option key={profile.id} value={profile.id}>
-              {profile.name} · {profile.apiMode === "responses" ? "Responses" : "Images"}
+              {profile.name} · {apiModeShortLabel(profile.apiMode)}
             </option>
           ))}
         </select>

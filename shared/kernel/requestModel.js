@@ -1,5 +1,7 @@
 export const DEFAULT_TEXT_MODEL = "gpt-5.5";
 export const DEFAULT_IMAGE_MODEL = "gpt-image-2";
+export const DEFAULT_GEMINI_IMAGE_MODEL = "gemini-3.1-flash-image";
+export const DEFAULT_IMAGEN_MODEL = "imagen-4.0-generate-001";
 export const DEFAULT_SIZE = "1024x1024";
 export const DEFAULT_QUALITY = "auto";
 export const DEFAULT_OUTPUT_FORMAT = "png";
@@ -30,7 +32,8 @@ export function normalizeBaseURL(raw) {
 }
 
 export function normalizeAPIMode(apiMode) {
-  return apiMode === "images" ? "images" : "responses";
+  if (apiMode === "images" || apiMode === "gemini" || apiMode === "imagen") return apiMode;
+  return "responses";
 }
 
 export function normalizeRequestPolicy(requestPolicy) {

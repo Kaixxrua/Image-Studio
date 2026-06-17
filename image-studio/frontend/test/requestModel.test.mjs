@@ -3,17 +3,33 @@ import test from "node:test";
 
 import {
   DEFAULT_AUTO_RETRY_COUNT,
+  DEFAULT_GEMINI_IMAGE_MODEL,
+  DEFAULT_IMAGEN_MODEL,
   DEFAULT_PARTIAL_IMAGES,
   DEFAULT_REASONING_EFFORT,
   buildResponsesPayload,
   describeProblem,
   extractInvalidSize,
   isRetryableRaw,
+  normalizeAPIMode,
   normalizeAutoRetryCount,
   normalizeOpenAIImageSize,
   repairSizeForOpenAI,
   normalizePartialImages,
 } from "../../../shared/kernel/requestModel.js";
+
+test("normalizeAPIMode preserves Gemini and Imagen modes", () => {
+  assert.equal(normalizeAPIMode("responses"), "responses");
+  assert.equal(normalizeAPIMode("images"), "images");
+  assert.equal(normalizeAPIMode("gemini"), "gemini");
+  assert.equal(normalizeAPIMode("imagen"), "imagen");
+  assert.equal(normalizeAPIMode("unknown"), "responses");
+});
+
+test("Gemini and Imagen default image models are exposed", () => {
+  assert.equal(DEFAULT_GEMINI_IMAGE_MODEL, "gemini-3.1-flash-image");
+  assert.equal(DEFAULT_IMAGEN_MODEL, "imagen-4.0-generate-001");
+});
 
 test("Responses payload defaults partial_images to streaming preview count", () => {
   const payload = buildResponsesPayload({

@@ -386,15 +386,31 @@ export function UpstreamConfigModal({
             {([
               {
                 id: "responses" as APIMode,
+                badge: "R",
                 title: "Responses API",
                 sub: "首选。支持 SSE 保活，长任务更稳。",
                 note: "适合 GPT 图像链路和提示词优化。",
               },
               {
                 id: "images" as APIMode,
+                badge: "I",
                 title: "Images API",
                 sub: "兼容性更广，接标准 generations / edits。",
                 note: "适合只想尽快接上常规生图接口。",
+              },
+              {
+                id: "gemini" as APIMode,
+                badge: "G",
+                title: "Gemini API",
+                sub: "直连 Google models/*:generateContent。",
+                note: "适合 Gemini 原生生图与后续图生图能力。",
+              },
+              {
+                id: "imagen" as APIMode,
+                badge: "Im",
+                title: "Imagen API",
+                sub: "直连 Google models/*:predict。",
+                note: "适合 Imagen 原生文生图模型。",
               },
             ]).map((item) => (
               <button
@@ -405,7 +421,7 @@ export function UpstreamConfigModal({
               >
                 <div className="flex items-center gap-2">
                   <span className="inline-flex h-8 min-w-[32px] items-center justify-center rounded-full bg-[var(--accent-soft)] px-2 text-[11px] font-semibold text-[var(--accent)]">
-                    {item.id === "responses" ? "R" : "I"}
+                    {item.badge}
                   </span>
                   <span className="text-[14px] font-semibold text-zinc-900 dark:text-zinc-100">{item.title}</span>
                 </div>

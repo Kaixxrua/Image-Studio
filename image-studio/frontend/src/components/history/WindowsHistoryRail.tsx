@@ -3,6 +3,7 @@ import {
   Search, Settings2, Split,
 } from "lucide-react";
 import type { APIMode, HistoryItem } from "../../types/domain";
+import { apiModeLabel, apiModeShortLabel } from "../../lib/profiles";
 import { ContextMenu } from "../common/ContextMenu";
 import { RawResponseModal } from "./RawResponseModal";
 import type { DateFilter, ModeFilter } from "./HistoryRail";
@@ -127,7 +128,7 @@ export function WindowsHistoryRail({
             >
               {profiles.map((profile) => (
                 <option key={profile.id} value={profile.id}>
-                  {profile.name} · {profile.apiMode === "responses" ? "Responses" : "Images"}
+                  {profile.name} · {apiModeShortLabel(profile.apiMode)}
                 </option>
               ))}
               <option value="__manage__">管理配置...</option>
@@ -150,7 +151,7 @@ export function WindowsHistoryRail({
             </button>
           </div>
           <span className="windows-history-api-mode">
-            {apiMode === "responses" ? "Responses API" : "Images API"}
+            {apiModeLabel(apiMode)}
           </span>
         </section>
 
